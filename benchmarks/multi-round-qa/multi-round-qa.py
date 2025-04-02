@@ -229,7 +229,8 @@ class UserSession:
         self.question_id += 1
         return (
             f"Here's question #{self.question_id}: can you tell me "
-            + "a new long story with a happy ending?"
+            + "a detailed story in AT LEAST 2500 words? Repeat the "
+            + "the story 25 times to THAT IS LONG ENOUGH"
         )
 
     def _launch_new_request(self, timestamp: float, request_executor: RequestExecutor):
@@ -280,6 +281,10 @@ class UserSession:
             f"Prompt tokens: {response.prompt_tokens}, "
             f"generation tokens: {response.generation_tokens}"
         )
+        logger.info(
+            f"generation tokens: {response.generation_tokens}"
+        )
+
         self._update_result(response)
 
     def set_internal_state(self, offset: float, timestamp: float):
