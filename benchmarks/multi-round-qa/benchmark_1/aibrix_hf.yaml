@@ -5,7 +5,7 @@ metadata:
   namespace: default
 type: Opaque
 data:
-  HF_TOKEN: <TOKEN>
+  HF_TOKEN: 
 
 
 

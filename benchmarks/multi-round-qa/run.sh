@@ -1,28 +1,22 @@
 #!/bin/bash
-
 if [[ $# -ne 3 ]]; then
     echo "Usage: $0 <model> <base url> <save file key>"
     exit 1
 fi
-
-
-
 MODEL=$1
 BASE_URL=$2
 # Warmup: precompute KV and store inside CPU mem
 # CONFIGURATION
-NUM_USERS_WARMUP=320
-
+NUM_USERS_WARMUP=1500
 SYSTEM_PROMPT=0 # Shared system prompt length
-CHAT_HISTORY=20000 # User specific chat history length
-ANSWER_LEN=1000 # Generation length per round
-
+CHAT_HISTORY=256 # User specific chat history length
+ANSWER_LEN=20 # Generation length per round
 warmup() {
     # Warm up the vLLM with a lot of user queries
     python3 ./multi-round-qa.py \
-        --num-users 320 \
+        --num-users 1 \
         --num-rounds 2 \
-        --qps 1.5 \
+        --qps 16 \
         --shared-system-prompt $SYSTEM_PROMPT \
         --user-history-prompt $CHAT_HISTORY \
         --answer-len $ANSWER_LEN \
@@ -30,27 +24,20 @@ warmup() {
         --base-url "$BASE_URL" \
         --output /tmp/warmup.csv \
         --log-interval 30 \
-        --time 100
+        --time $((NUM_USERS_WARMUP / 16))
 }
-
 warmup
-
-
 MODEL=$1
 BASE_URL=$2
-
 # CONFIGURATION
 NUM_USERS=320
-NUM_ROUNDS=2
-
+NUM_ROUNDS=20
 SYSTEM_PROMPT=0 # Shared system prompt length
-CHAT_HISTORY=20000 # User specific chat history length
-ANSWER_LEN=1000 # Generation length per round
-
+CHAT_HISTORY=256 # User specific chat history length
+ANSWER_LEN=20 # Generation length per round
 run_benchmark() {
     # $1: qps
     # $2: output file
-
     # Real run
     python3 ./multi-round-qa.py \
         --num-users $NUM_USERS \
@@ -64,19 +51,12 @@ run_benchmark() {
         --output "$2" \
         --log-interval 30 \
         --time 100
-
     sleep 10
 }
-
 KEY=$3
-
 # Run benchmarks for different QPS values
-
-if [[ "$KEY" == "naive" ]]; then
-    QPS_VALUES=(0.1 0.5 0.9 1.3 1.7 2.1 2.5 2.9 3.3 3.7 4.1)
-else
-    QPS_VALUES=(1.5)
-fi
+QPS_VALUES_REV=(100 75 35 30 25 20 15 10 9 8 7 6 5 4 3 2 1)
+QPS_VALUES=(1 2 3 4 5 6 7 8 9 10 15 20 25 30 35 75 100)
 
 # Run benchmarks for the determined QPS values
 for qps in "${QPS_VALUES[@]}"; do

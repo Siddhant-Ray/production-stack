@@ -229,8 +229,7 @@ class UserSession:
         self.question_id += 1
         return (
             f"Here's question #{self.question_id}: can you tell me "
-            + "a detailed story in AT LEAST 2500 words? "
-            + "hi"*1500
+            + "a new long story with a happy ending?"
         )
 
     def _launch_new_request(self, timestamp: float, request_executor: RequestExecutor):

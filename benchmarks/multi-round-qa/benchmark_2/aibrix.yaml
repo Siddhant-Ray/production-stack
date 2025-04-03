@@ -37,7 +37,7 @@ spec:
             - --served-model-name
             - llama3-1-8b
             - --max-model-len
-            - "45000" # please modify this field if your gpu has more room
+            - "24000" # please modify this field if your gpu has more room
             - --enable-prefix-caching
             - --disable-fastapi-docs
           env:

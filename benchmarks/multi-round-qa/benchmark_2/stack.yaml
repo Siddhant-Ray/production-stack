@@ -15,13 +15,13 @@ servingEngineSpec:
     vllmConfig:
       enableChunkedPrefill: false
       enablePrefixCaching: false
-      maxModelLen: 45000
+      maxModelLen: 32000
       dtype: "bfloat16"
-      extraArgs: ["--disable-log-requests", "--swap-space", 0, "--gpu-memory-utilization", 0.75]
+      extraArgs: ["--disable-log-requests", "--swap-space", 0]
     lmcacheConfig:
       enabled: true
       cpuOffloadingBufferSize: "120"
-    hf_token: <TOKEN>
+    hf_token: 
 
 routerSpec:
   repository: "lmcache/lmstack-router"
