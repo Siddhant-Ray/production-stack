@@ -229,8 +229,8 @@ class UserSession:
         self.question_id += 1
         return (
             f"Here's question #{self.question_id}: can you tell me "
-            + "a detailed story in AT LEAST 2500 words? Repeat the "
-            + "the story 25 times to THAT IS LONG ENOUGH"
+            + "a detailed story in AT LEAST 2500 words? "
+            + "hi"*1500
         )
 
     def _launch_new_request(self, timestamp: float, request_executor: RequestExecutor):
@@ -279,9 +279,6 @@ class UserSession:
         logger.debug(
             f"User {self.user_config.user_id} finished one request. "
             f"Prompt tokens: {response.prompt_tokens}, "
-            f"generation tokens: {response.generation_tokens}"
-        )
-        logger.info(
             f"generation tokens: {response.generation_tokens}"
         )
 
