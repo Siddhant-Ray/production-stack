@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: vllm-openai
-          image: aibrix/vllm-openai:v0.6.1-edb07092-20250118
+          image: aibrix/vllm-openai:v0.7.3.self.post1
           imagePullPolicy: Always
           command:
             - python3
@@ -37,11 +37,13 @@ spec:
             - --served-model-name
             - llama3-1-70b
             - --max-model-len
-            - "32000"
+            - "20000"
             - --enable-prefix-caching
             - --disable-fastapi-docs
             - --tensor-parallel-size
             - "2"
+            - --gpu-memory-utilization
+            - "0.95"
           env:
             - name: VLLM_USE_VINEYARD_CACHE
               value: "1"

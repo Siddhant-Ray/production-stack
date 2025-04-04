@@ -56,7 +56,7 @@ run_benchmark() {
 KEY=$3
 # Run benchmarks for different QPS values
 QPS_VALUES_REV=(100 75 35 30 25 20 15 10 9 8 7 6 5 4 3 2 1)
-QPS_VALUES=(1 2 3 4 5 6 7 8 9 10 15 20 25 30 35 75 100)
+QPS_VALUES=(100 75 35 30 25 20 15 10 9 8 7 6 5 4 3 2 1)
 
 # Run benchmarks for the determined QPS values
 for qps in "${QPS_VALUES[@]}"; do
