@@ -1,0 +1,5 @@
+chunk_size: 256
+local_disk: "file:///home/ubuntu/st-prodstack-i/LMCache/kv/"
+max_local_disk_size: 1800
+local_cpu: True
+max_local_cpu_size: 1000
