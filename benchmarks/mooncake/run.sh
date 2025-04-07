@@ -20,7 +20,7 @@ run_benchmark() {
     python3 ./mooncake-qa.py \
         --num-users $NUM_USERS \
         --num-rounds $NUM_ROUNDS \
-        --qps "$1" \
+        --qps 1 \
         --shared-system-prompt "$SYSTEM_PROMPT" \
         --user-history-prompt "$CHAT_HISTORY" \
         --answer-len $ANSWER_LEN \
@@ -29,13 +29,14 @@ run_benchmark() {
         --output "$2" \
         --log-interval 30 \
         --time 500 \
+        --slowdown-factor $1
     sleep 10
 }
 KEY=$3
 # Run benchmarks for different QPS values
-QPS_VALUES=(1) # Set your QPS
+SLOWDOWN_FACTORS=(15 10 8 6 5 2)
 # Run benchmarks for the determined QPS values
-for qps in "${QPS_VALUES[@]}"; do
-    output_file="${KEY}_output_${qps}.csv"
-    run_benchmark "$qps" "$output_file"
+for sd in "${SLOWDOWN_FACTORS[@]}"; do
+    output_file="${KEY}_output_1_sd${sd}.csv"
+    run_benchmark "$sd" "$output_file"
 done
