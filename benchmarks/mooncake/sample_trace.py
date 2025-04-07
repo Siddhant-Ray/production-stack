@@ -11,13 +11,19 @@ class TrieNode:
 class PrefixTrie:
     def __init__(self):
         self.root = TrieNode()
+        self.insertion_index = 1
 
     def insert(self, sequence, meta):
+
+        meta_with_index = dict(meta)
+        meta_with_index["insertion_index"] = self.insertion_index
+        self.insertion_index += 1
+
         node = self.root
         for num in sequence:
             node = node.children[num]
             node.count += 1
-            node.metadata.append(meta)
+            node.metadata.append(meta_with_index)
 
     def get_shared_prefix_lengths(self, sequence):
         node = self.root
@@ -35,11 +41,25 @@ class PrefixTrie:
 
         def dfs(node, path):
             if node.count > 1:
-                timestamps = [m['timestamp'] for m in node.metadata]
-                spread = max(timestamps) - min(timestamps) if timestamps else 0
+                indices = [m['insertion_index'] for m in node.metadata]
+                indices.sort()
+
+                # Calculate spread
+                spread = indices[-1] - indices[0] if indices else 0
+
+                # Calculate shortest distance between consecutive occurrences
+                next_diff = float("inf")
+                for i in range(1, len(indices)):
+                    diff = indices[i] - indices[i - 1]
+                    if diff < next_diff:
+                        next_diff = diff
+                next_diff = next_diff if next_diff != float("inf") else None
+
                 results.append({
                     "prefix": path[:],
                     "count": node.count,
+                    "repeat": indices[:],
+                    "next": next_diff,
                     "metadata": node.metadata[:],
                     "spread": spread
                 })
@@ -50,18 +70,6 @@ class PrefixTrie:
 
         dfs(self.root, [])
 
-        # # Filter to keep only longest prefixes
-        # longest_only = []
-        # results.sort(key=lambda x: len(x["prefix"]), reverse=True)  # Start from longest
-        # seen = set()
-
-        # for item in results:
-        #     tup_prefix = tuple(item["prefix"])
-        #     if not any(tup_prefix[:i] in seen for i in range(1, len(tup_prefix))):
-        #         longest_only.append(item)
-        #         seen.add(tup_prefix)
-
-        # return longest_only
         return results
 
 file_path = "./conversation_trace.jsonl"
@@ -121,14 +129,17 @@ if not os.path.exists("shared_prefixes_full.csv"):
                 "output_length": meta["output_length"],
                 "hash_ids": meta["hash_ids"],
                 "prefix": prefix,
-                "spread": item["spread"]
+                "spread": item["spread"],
+                "next": item["next"],
+                "repeat": item["repeat"],
+                "count": len(item["repeat"]),
             })
 
     df = pd.DataFrame(rows)
     df.to_csv("shared_prefixes_full.csv", index=False, sep=";")
 
 df = pd.read_csv("shared_prefixes_full.csv", sep=";")
-df.columns = ["timestamp", "input_length", "output_length", "hash_ids", "prefix", "spread"]
+df.columns = ["timestamp", "input_length", "output_length", "hash_ids", "prefix", "spread", "next", "repeat", "count"]
 
 # sort by prefix length
 # make prefix a list, instead of a string of list
@@ -155,18 +166,84 @@ df["prefix"] = df["prefix"].apply(lambda x: eval(x))
 # replace prefix_len column with new prefix_len column
 df["prefix_len"] = df["prefix"].apply(len)
 
+# If repeat values are the same, find the overlap between the
+# hash ids of the those repeat values and divide by the number 
+# of hash ids in the first repeat value,
+# multiply by 100 to get a percentage
+
+# first group by repeat values and then find the overlap
+# of the corresponding hash id lists
+
+# convert hash_ids column to a list
+
+df["hash_ids"] = df["hash_ids"].apply(lambda x: eval(x))
+
+df["fraction"] = df.apply(
+    lambda row: len(set(row["hash_ids"]).intersection(
+        set(df[df["repeat"] == row["repeat"]]["hash_ids"].values[0])
+    )) / len(row["hash_ids"]) * 100
+    if len(row["hash_ids"]) > 0 else 0,
+    axis=1
+)
+
+# sort by fraction
+df = df.sort_values(by=["fraction"], ascending=[False], ignore_index=True)
+
+# Group by repeat values and for all fractions in the group,
+# make the first fraction 0, keep the rest of the fractions same
+
+def set_one_fraction_zero(group):
+    if len(group) >= 1:
+        group.loc[group.index[0], "fraction"] = 0  # Set the first one to 0
+    return group
+
+df = df.groupby("repeat", group_keys=False).apply(set_one_fraction_zero)
+
+# sort by repeat values
+df = df.sort_values(by=["repeat", "fraction"], ascending=[False, True], ignore_index=True)
+
+
 print(df.head(10))
 
 
+# print(df.head(30))
+
+print(df.head(31))
+
+# Keep prefix lengths that are less than 50
+# df = df[df["prefix_len"] > 5]
+# number of unique repeat values is number os sessions
+# unique_repeats = df["repeat"].nunique()
+# print(f"Number of unique repeat values: {unique_repeats}")
 
 # print first row , prefix value
-print(df.iloc[0]["prefix"])
-print(len(df.iloc[0]["prefix"]))
+# print(df.iloc[0]["prefix"])
+# print(len(df.iloc[0]["prefix"]))
+
+
 
 # plot prefix length vs count
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+
+# plot distribution of fraction
+plt.figure(figsize=(10, 6))
+# plot ecdf of fraction
+sns.ecdfplot(df["fraction"], stat="proportion")
+plt.xlabel("Fraction of hash ids in the prefix")
+plt.ylabel("Proportion")
+plt.title("ECDF of Fraction of Hash IDs in the Prefix")
+plt.savefig("fraction_ecdf.pdf", bbox_inches="tight")
+
+# print distriubtion of count (prefix repeat values)
+plt.figure(figsize=(10, 6))
+# normali by unique repeat values
+sns.histplot(df["count"], bins=30, kde=True)
+plt.xlabel("Count (number of repeated prefixes)")
+plt.ylabel("Count")
+plt.title("Distribution Count of Shared Prefixes")
+plt.savefig("prefix_count_distribution.pdf", bbox_inches="tight")
 
 plt.figure(figsize=(10, 6))
 sns.histplot(df["prefix_len"], bins=30, kde=True)
