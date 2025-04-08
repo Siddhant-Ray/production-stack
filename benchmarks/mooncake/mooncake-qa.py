@@ -14,7 +14,7 @@ import json
 
 mooncake_data = []
 # with open("conversation_trace.jsonl", "r") as file:
-with open("shared_prefixes_sampled.jsonl", "r") as file:
+with open("conversation_trace_copy.jsonl", "r") as file:
     for line in file:
         line = line.strip()
         if line:  # Skip empty lines
@@ -250,7 +250,8 @@ class UserSession:
         logger.debug(
             f"User {self.user_config.user_id} issues request {self.question_id}"
         )
-        max_tokens = mooncake_data[self.mooncake_id]["output_length"]
+        # max_tokens = mooncake_data[self.mooncake_id]["output_length"]
+        max_tokens = 1 # simulate prefill only
         request_executor.launch_request(
             self.chat_history,
             max_tokens,
@@ -396,19 +397,20 @@ class UserSessionManager:
         #     self._ramp_up(timestamp, self.ramp_up_time)
         if self.start_time is None:
             self.start_time = timestamp
-        if (
-            timestamp - self.initial_time
-            >= (mooncake_data[self.mooncake_request_to_send]["timestamp"] / 1000)
-            * self.workload_config.slowdown_factor
-        ):
-            self._create_user_session(self.mooncake_request_to_send)
-            self.last_user_join = timestamp
-            logger.info(
-                f"Joined a new user {self.user_id}, "
-                f"now active users: {len(self.sessions)}, "
-                f"Slowdown factor: {self.workload_config.slowdown_factor}"
-            )
-            self.mooncake_request_to_send += 1
+        if (len(mooncake_data) > self.mooncake_request_to_send):
+            if (
+                timestamp - self.initial_time
+                >= (mooncake_data[self.mooncake_request_to_send]["timestamp"] / 1000)
+                * self.workload_config.slowdown_factor
+            ):
+                self._create_user_session(self.mooncake_request_to_send)
+                self.last_user_join = timestamp
+                logger.info(
+                    f"Joined a new user {self.user_id}, "
+                    f"now active users: {len(self.sessions)}, "
+                    f"Slowdown factor: {self.workload_config.slowdown_factor}"
+                )
+                self.mooncake_request_to_send += 1
         for session in self.sessions:
             session.step(timestamp, executor)
         self._remove_finished_sessions()

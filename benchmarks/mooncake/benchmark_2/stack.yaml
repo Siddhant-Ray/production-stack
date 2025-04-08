@@ -7,7 +7,7 @@ servingEngineSpec:
     modelURL: "meta-llama/Llama-3.1-8B-Instruct"
     replicaCount: 1
     requestCPU: 10
-    requestMemory: "350Gi"
+    requestMemory: "800Gi"
     requestGPU: 2
     pvcStorage: "50Gi"
     pvcAccessMode:
@@ -15,15 +15,15 @@ servingEngineSpec:
     vllmConfig:
       enableChunkedPrefill: false
       enablePrefixCaching: false
-      maxModelLen: 80000
+      maxModelLen: 100000
       dtype: "bfloat16"
       extraArgs: ["--disable-log-requests", "--swap-space", 0, "--gpu-memory-utilization", "0.8"]
       tensorParallelSize: 1
     lmcacheConfig:
       enabled: true
-      cpuOffloadingBufferSize: "300"
+      cpuOffloadingBufferSize: "500"
     hf_token: 
-    shmSize: "20Gi"
+    # shmSize: "20Gi"
 routerSpec:
   resources:
     requests:

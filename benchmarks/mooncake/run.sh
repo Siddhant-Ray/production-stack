@@ -10,7 +10,7 @@ NUM_USERS=320
 NUM_ROUNDS=5
 SYSTEM_PROMPT=0 # Shared system prompt length
 CHAT_HISTORY=0 # User specific chat history length
-ANSWER_LEN=2000 # Generation length per round
+ANSWER_LEN=1 # Generation length per round
 TIME=20
 MAX_QPS=5
 run_benchmark() {
@@ -28,13 +28,13 @@ run_benchmark() {
         --base-url "$BASE_URL" \
         --output "$2" \
         --log-interval 30 \
-        --time 500 \
+        --time 2720 \
         --slowdown-factor $1
     sleep 10
 }
 KEY=$3
 # Run benchmarks for different QPS values
-SLOWDOWN_FACTORS=(15 10 8 6 5 2)
+SLOWDOWN_FACTORS=(4)
 # Run benchmarks for the determined QPS values
 for sd in "${SLOWDOWN_FACTORS[@]}"; do
     output_file="${KEY}_output_1_sd${sd}.csv"
