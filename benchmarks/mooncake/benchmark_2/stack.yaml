@@ -8,21 +8,21 @@ servingEngineSpec:
     replicaCount: 1
     requestCPU: 10
     requestMemory: "800Gi"
-    requestGPU: 2
+    requestGPU: 1
     pvcStorage: "50Gi"
     pvcAccessMode:
       - ReadWriteOnce
     vllmConfig:
       enableChunkedPrefill: false
-      enablePrefixCaching: false
+      enablePrefixCaching: true
       maxModelLen: 100000
       dtype: "bfloat16"
       extraArgs: ["--disable-log-requests", "--swap-space", 0, "--gpu-memory-utilization", "0.8"]
       tensorParallelSize: 1
-    lmcacheConfig:
-      enabled: true
+    lmcacheConfig: 
+      enabled: false
       cpuOffloadingBufferSize: "500"
-    hf_token: 
+    hf_token:
     # shmSize: "20Gi"
 routerSpec:
   resources:
