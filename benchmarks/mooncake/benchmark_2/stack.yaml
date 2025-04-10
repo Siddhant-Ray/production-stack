@@ -3,7 +3,7 @@ servingEngineSpec:
   modelSpec:
   - name: "llama3"
     repository: "lmcache/vllm-openai"
-    tag: "2025-02-28-v0.7.3"
+    tag: "2025-03-28"
     modelURL: "meta-llama/Llama-3.1-8B-Instruct"
     replicaCount: 1
     requestCPU: 10
@@ -14,7 +14,7 @@ servingEngineSpec:
       - ReadWriteOnce
     vllmConfig:
       enableChunkedPrefill: false
-      enablePrefixCaching: true
+      enablePrefixCaching: false
       maxModelLen: 100000
       dtype: "bfloat16"
       extraArgs: ["--disable-log-requests", "--swap-space", 0, "--gpu-memory-utilization", "0.8"]

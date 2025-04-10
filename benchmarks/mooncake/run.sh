@@ -28,13 +28,13 @@ run_benchmark() {
         --base-url "$BASE_URL" \
         --output "$2" \
         --log-interval 30 \
-        --time 1360 \
+        --time 450 \
         --slowdown-factor $1
     sleep 10
 }
 KEY=$3
 # Run benchmarks for different QPS values
-SLOWDOWN_FACTORS=(2)
+SLOWDOWN_FACTORS=(1 2 3 4 5)
 # Run benchmarks for the determined QPS values
 for sd in "${SLOWDOWN_FACTORS[@]}"; do
     output_file="${KEY}_output_1_sd${sd}.csv"

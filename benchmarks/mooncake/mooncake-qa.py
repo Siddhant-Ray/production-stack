@@ -14,7 +14,7 @@ import json
 
 mooncake_data = []
 # with open("conversation_trace.jsonl", "r") as file:
-with open("conversation_trace_copy.jsonl", "r") as file:
+with open("conversation_trace_copy_new.jsonl", "r") as file:
     for line in file:
         line = line.strip()
         if line:  # Skip empty lines
